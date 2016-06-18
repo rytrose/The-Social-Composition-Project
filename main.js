@@ -69,12 +69,12 @@ function nextIdPage(response, callback, nextURL){
   if(response.data == undefined){
     console.log("No post id returned.")
   }
-  else if((nextURL == undefined)||(pagesOfPostIds > 6)){
+  else if((nextURL == undefined)||(pagesOfPostIds > 1)){
     console.log("No more pages.")
     for(i = 0; i < response.data.length; i++){
       ids.push(response.data[i].id);
     }
-    callback(printReactions);
+    callback(finish);
   }
   else{
     console.log("Reading page...")
@@ -92,25 +92,41 @@ function nextIdPage(response, callback, nextURL){
   }
 }
 
-function captureNamesReactions(callback){
-  console.log(ids)
-  var dest = ''
-  for(i = 0; i < ids.length; i++){
-    dest = '/' + ids[i] + '/reactions'
-    postIdArray.push(ids[i]);
-    FB.api(dest, {
-      access_token: user_access_token,
-      fields: 'name,type'
-    }, function(response){
-      nextReactionsPage(response, callback, response.paging);
-    });
+// Uses recursion to get names and reactions from previous gathered Ids
+function reactionProcessing(callback){
+  if(ids.length == 0){
+    callback();
+  }
+  else{
+    captureNamesReactions(reactionProcessing);
   }
 }
 
-// Recursively pages through posts and stores names and reactions
+// Gathers the names and reactions for a given post
+function captureNamesReactions(callback){
+  var id = ids.shift();
+  dest = '/' + id + '/reactions'
+  postIdArray.push(id);
+  FB.api(dest, {
+    access_token: user_access_token,
+    fields: 'name,type'
+  }, function(response){
+    nextReactionsPage(response, callback, response.paging);
+  });
+}
+
+// Pages through posts and stores names and reactions
 function nextReactionsPage(response, callback, nextURL){
-  if((response.data.length == 0)||(response.paging == undefined)){
+  if(response.data == undefined){
+    callback(finish);
+  }
+  else if((response.data.length == 0)||(response.paging == undefined)){
     console.log("No post reactions returned.")
+      nameArrayofArrays.push(nameArray);
+      nameArray = [];
+      reactionArrayofArrays.push(reactionArray);
+      reactionArray = [];
+    callback(finish);
   }
   else if(nextURL.hasOwnProperty('next') == false){
     console.log("No more pages.")
@@ -118,7 +134,13 @@ function nextReactionsPage(response, callback, nextURL){
       nameArray.push(response.data[i].name);
       reactionArray.push(response.data[i].type);
     }
-    callback();
+    console.log(nameArray);
+    nameArrayofArrays.push(nameArray);
+    nameArray = [];
+    console.log(reactionArray);
+    reactionArrayofArrays.push(reactionArray);
+    reactionArray = [];
+    callback(finish);
   }
   else{
     console.log("Reading page...")
@@ -134,16 +156,6 @@ function nextReactionsPage(response, callback, nextURL){
       nextReactionsPage(response, callback, response.paging)
     });
   }
-}
-
-function printReactions(){
-  console.log(nameArray);
-  nameArrayofArrays.push(nameArray);
-  nameArray = [];
-  console.log(reactionArray);
-  reactionArrayofArrays.push(reactionArray);
-  reactionArray = [];
-
 }
 
 function finish(){
