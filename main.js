@@ -2,6 +2,7 @@ var user_access_token = -1;
 var ids = [];
 var reactionArray = [];
 
+// Facebook API Init
 window.fbAsyncInit = function() {
   FB.init({
     appId      : '470173043180481',
@@ -25,15 +26,11 @@ function myFacebookLogin() {
     if (response.authResponse) {
       console.log('Welcome!  Fetching your information.... ');
       FB.api('/me', function(response) {
+        console.log(response);
         console.log('Good to see you, ' + response.name + '.');
       });
       FB.getLoginStatus(function(response){
         if (response.status === 'connected') {
-          // the user is logged in and has authenticated your
-          // app, and response.authResponse supplies
-          // the user's ID, a valid access token, a signed
-          // request, and the time the access token
-          // and signed request each expire
           user_access_token = response.authResponse.accessToken;
         } else if (response.status === 'not_authorized') {
           // the user is logged in to Facebook,
@@ -51,32 +48,39 @@ function myFacebookLogin() {
 };
 
 function capturePostIds(callback) {
-  ids = []
   FB.api('/10351802587/feed', {
     access_token: user_access_token,
     fields: 'id'
   }, function(response){
-      for(i = 0; i < response.data.length; i++){
-        ids.push(response.data[i].id);
-      }
-      var nextURL = response.paging.next;
-      while(nextURL != undefined){
-        nextURL = evaluateIdAndIteratePage(nextURL)
-      }
-  } )
-  callback(printReactions)
-  return
-}
+    nextIdPage(response, callback, response.paging);
+  });
+};
 
-function evaluateIdAndIteratePage(nextURL){
-  FB.api(nextURL, {fields: 'id'}, function(response){
-      if(response.data != undefined){
-        for(i = 0; i < response.data.length; i++){
-          ids.push(response.data[i].id);
-        }
-      }
-      return response.paging.next
-  })
+// Test recursive function
+function nextIdPage(response, callback, nextURL){
+  if(response.data == undefined){
+    console.log("No post id returned.")
+  }
+  else if(nextURL == undefined){
+    console.log("No more pages.")
+    for(i = 0; i < response.data.length; i++){
+      ids.push(response.data[i].id);
+    }
+    callback();
+  }
+  else{
+    console.log("Reading page...")
+    console.log(response)
+    for(i = 0; i < response.data.length; i++){
+      ids.push(response.data[i].id);
+    }
+    FB.api(nextURL.next, {
+      access_token: user_access_token,
+      fields: 'id'
+    }, function(response){
+      nextIdPage(response, callback, response.paging)
+    });
+  }
 }
 
 function generateReactionArray(callback2){
@@ -111,6 +115,6 @@ function evaluateReactionAndIteratePage(nextURL){
   })
 }
 
-function printReactions(){
-  console.log(reactionArray.toString())
+function printIds(){
+  console.log(ids)
 }
