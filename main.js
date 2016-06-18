@@ -1,6 +1,13 @@
 var user_access_token = -1;
+var pagesOfPostIds = 0;
 var ids = [];
+
+var postIdArray = [];
+var nameArray = [];
 var reactionArray = [];
+var nameArrayofArrays = [];
+var reactionArrayofArrays = [];
+
 
 // Facebook API Init
 window.fbAsyncInit = function() {
@@ -47,8 +54,9 @@ function myFacebookLogin() {
    }, {scope: 'user_friends,user_likes'});
 };
 
+// Gathers the post ids of a given page (currently hardcoded to Speakeasy page: https://www.facebook.com/CWRUSpeakeasy/)
 function capturePostIds(callback) {
-  FB.api('/10351802587/feed', {
+  FB.api('/92017720030/feed', {
     access_token: user_access_token,
     fields: 'id'
   }, function(response){
@@ -56,17 +64,17 @@ function capturePostIds(callback) {
   });
 };
 
-// Test recursive function
+// Recursively pages through post results and stores ids
 function nextIdPage(response, callback, nextURL){
   if(response.data == undefined){
     console.log("No post id returned.")
   }
-  else if(nextURL == undefined){
+  else if((nextURL == undefined)||(pagesOfPostIds > 6)){
     console.log("No more pages.")
     for(i = 0; i < response.data.length; i++){
       ids.push(response.data[i].id);
     }
-    callback();
+    callback(printReactions);
   }
   else{
     console.log("Reading page...")
@@ -74,6 +82,7 @@ function nextIdPage(response, callback, nextURL){
     for(i = 0; i < response.data.length; i++){
       ids.push(response.data[i].id);
     }
+    pagesOfPostIds += 1;
     FB.api(nextURL.next, {
       access_token: user_access_token,
       fields: 'id'
@@ -83,38 +92,60 @@ function nextIdPage(response, callback, nextURL){
   }
 }
 
-function generateReactionArray(callback2){
-  for(i = 0; i < ids.length; i++){
-    var dest = '/' + ids[i] + '/reactions'
-    FB.api(dest, {
-      access_token: user_access_token
-    }, function(response){
-      if((response.data != undefined)&&(response.data.length != 0)){
-        for(i = 0; i < response.data.length; i++){
-          reactionArray.push(response.data[i].type);
-        }
-        var nextURL = response.paging.next;
-        while(nextURL != undefined){
-          nextURL = evaluateReactionAndIteratePage(nextURL)
-        }
-      }
-    })
-  }
-  callback2()
-  return;
-}
-
-function evaluateReactionAndIteratePage(nextURL){
-  FB.api(nextURL, function(response){
-      if(response.data != undefined){
-        for(i = 0; i < response.data.length; i++){
-          reactionArray.push(response.data[i].type);
-        }
-      }
-      return response.paging.next
-  })
-}
-
-function printIds(){
+function captureNamesReactions(callback){
   console.log(ids)
+  var dest = ''
+  for(i = 0; i < ids.length; i++){
+    dest = '/' + ids[i] + '/reactions'
+    postIdArray.push(ids[i]);
+    FB.api(dest, {
+      access_token: user_access_token,
+      fields: 'name,type'
+    }, function(response){
+      nextReactionsPage(response, callback, response.paging);
+    });
+  }
+}
+
+// Recursively pages through posts and stores names and reactions
+function nextReactionsPage(response, callback, nextURL){
+  if((response.data.length == 0)||(response.paging == undefined)){
+    console.log("No post reactions returned.")
+  }
+  else if(nextURL.hasOwnProperty('next') == false){
+    console.log("No more pages.")
+    for(i = 0; i < response.data.length; i++){
+      nameArray.push(response.data[i].name);
+      reactionArray.push(response.data[i].type);
+    }
+    callback();
+  }
+  else{
+    console.log("Reading page...")
+    console.log(response)
+    for(i = 0; i < response.data.length; i++){
+      nameArray.push(response.data[i].name);
+      reactionArray.push(response.data[i].type);
+    }
+    FB.api(nextURL.next, {
+      access_token: user_access_token,
+      fields: 'name,type'
+    }, function(response){
+      nextReactionsPage(response, callback, response.paging)
+    });
+  }
+}
+
+function printReactions(){
+  console.log(nameArray);
+  nameArrayofArrays.push(nameArray);
+  nameArray = [];
+  console.log(reactionArray);
+  reactionArrayofArrays.push(reactionArray);
+  reactionArray = [];
+
+}
+
+function finish(){
+  debugger;
 }
