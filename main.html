@@ -1,16 +1,36 @@
+<!--
+/*
+ *XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ *
+ *  The Social Composition Project
+ *    by Ryan Rose
+ *   (c) June, 2016
+ *
+ *  This project seeks to interpret the humanity exhibited through social media into music,
+ *  by procedurally generating a unique composition based upon a Facebook post's reactions.
+ *  Each reaction has a distinct melodic phrase, which floats over an oscillating drone.
+ *  A disproprtionate amount of 'LIKE's relative to the other reactions led me to compose special
+ *  phrases for when a sequence of uninterrupted 'LIKE's is read.
+ *
+ *XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ */
+-->
 <!DOCTYPE html>
 <html>
 <head>
 <title>Ryan's Facebook Composition Project</title>
 </head>
 <body>
-  <script type="text/javascript" src="https://2fbfed975769fc56da4332b6a786b18fddd07810.googledrive.com/host/0BwR097wlCSP5cVpmbENBcW5OYlE/main.js"></script>
-
+  <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript" src="shared.js"></script>
+  <script>music = new CompositionGeneration(context);</script>
 <h1>Hello, World!</h1>
 <p>Ryan Taylor Rose</p>
 <button onclick="myFacebookLogin()">Login with Facebook</button>
 <br></br>
 <button onclick="capturePostIds(reactionProcessing)">capturePostIds()</button>
+<br></br>
+<button onclick="music.playComposition(0, 4, 0.5)">playComposition()</button>
 </body>
 
 </html>

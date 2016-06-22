@@ -1,3 +1,18 @@
+/*
+ *XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ *
+ *  The Social Composition Project
+ *    by Ryan Rose
+ *   (c) June, 2016
+ *
+ *  This project seeks to interpret the humanity exhibited through social media into music,
+ *  by procedurally generating a unique composition based upon a Facebook post's reactions.
+ *  Each reaction has a distinct melodic phrase, which floats over an oscillating drone.
+ *  A disproprtionate amount of 'LIKE's relative to the other reactions led me to compose special
+ *  phrases for when a sequence of uninterrupted 'LIKE's is read.
+ *
+ *XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ */
 var user_access_token = -1;
 var pagesOfPostIds = 0;
 var ids = [];
@@ -8,6 +23,9 @@ var reactionArray = [];
 var nameArrayofArrays = [];
 var reactionArrayofArrays = [];
 
+
+var indexOfLongest = 0;
+var likeCount = 0;
 
 // Facebook API Init
 window.fbAsyncInit = function() {
@@ -69,7 +87,7 @@ function nextIdPage(response, callback, nextURL){
   if(response.data == undefined){
     console.log("No post id returned.")
   }
-  else if((nextURL == undefined)||(pagesOfPostIds > 1)){
+  else if((nextURL == undefined)||(pagesOfPostIds > 0)){
     console.log("No more pages.")
     for(i = 0; i < response.data.length; i++){
       ids.push(response.data[i].id);
@@ -159,5 +177,80 @@ function nextReactionsPage(response, callback, nextURL){
 }
 
 function finish(){
+  var length = reactionArrayofArrays[0].length;
+  for(i = 0; i < reactionArrayofArrays.length; i++){
+    if(reactionArrayofArrays[i].length > length){
+      indexOfLongest = i;
+      length = reactionArrayofArrays[i].length
+    }
+  }
   debugger;
 }
+
+/*
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ *  This section holds the music generation functions.
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ */
+function CompositionGeneration(context){
+  var ctx = this;
+  var loader = new BufferLoader(context,['sounds/like1_8_counts.mp3','sounds/drone1.mp3', 'sounds/4like_seq_drone.mp3', 'sounds/beep1.mp3' ], onloaded)
+
+  function onloaded(buffers){
+    ctx.buffers = buffers;
+    }
+
+  loader.load();
+}
+
+CompositionGeneration.prototype.playComposition = function(type, number, interval){
+  var time = context.currentTime;
+  var quarterNote = 0.5357143; // quarter note = 112bpm
+  for(i = 0; i < reactionArrayofArrays[indexOfLongest].length; i++){
+
+    // handle the melody
+    // If LIKE
+    if(reactionArrayofArrays[indexOfLongest][i] == 'LIKE'){
+      likeCount++;
+
+      // normal like sample
+      var source = this.makeReactionSource(this.buffers[0]);
+      source[source.start ? 'start' : 'noteOn'](time + i * 8 * quarterNote);
+
+      // 4-like sequence sample
+      if(i > 0 && likeCount % 4 == 0){
+        var droneSource2 = this.makeDroneSource(this.buffers[2]);
+        droneSource2[droneSource2.start ? 'start' : 'noteOn'](time + (i + 1) * 8 * quarterNote);
+      }
+    }
+    else{
+      likeCount = 0;
+      var reactionSource = this.makeReactionSource(this.buffers[3]);
+      source[source.start ? 'start' : 'noteOn'](time + i * 8 * quarterNote);
+    }
+
+    // handle the drone
+    var droneSource = this.makeDroneSource(this.buffers[1]);
+    droneSource[droneSource.start ? 'start' : 'noteOn'](time + i * 16 * quarterNote);
+  }
+}
+
+CompositionGeneration.prototype.makeReactionSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.4;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
+CompositionGeneration.prototype.makeDroneSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.20;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
