@@ -26,11 +26,11 @@
   <script>music = new CompositionGeneration(context);</script>
 <h1>Hello, World!</h1>
 <p>Ryan Taylor Rose</p>
-<button onclick="myFacebookLogin()">Login with Facebook</button>
-<br></br>
-<button onclick="capturePostIds(reactionProcessing)">capturePostIds()</button>
-<br></br>
-<button onclick="music.playComposition(0, 4, 0.5)">playComposition()</button>
+<button onclick="myFacebookLogin(capturePostIds)">Generate Composition</button>
+<br>
+<button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button>
+<br>
+<div id="loading" style="display:none"><p>Loading...  <img src="loading1.gif"  height="50" width="50"></p></div>
 </body>
 
 </html>

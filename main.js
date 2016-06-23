@@ -46,13 +46,14 @@ window.fbAsyncInit = function() {
    console.log()
  }(document, 'script', 'facebook-jssdk'));
 
-function myFacebookLogin() {
+function myFacebookLogin(callback) {
   FB.login(function(response){
     if (response.authResponse) {
       console.log('Welcome!  Fetching your information.... ');
       FB.api('/me', function(response) {
         console.log(response);
         console.log('Good to see you, ' + response.name + '.');
+        callback(reactionProcessing);
       });
       FB.getLoginStatus(function(response){
         if (response.status === 'connected') {
@@ -74,6 +75,8 @@ function myFacebookLogin() {
 
 // Gathers the post ids of a given page (currently hardcoded to Speakeasy page: https://www.facebook.com/CWRUSpeakeasy/)
 function capturePostIds(callback) {
+  var div = document.getElementById("loading");
+  div.style.display = "block";
   FB.api('/92017720030/feed', {
     access_token: user_access_token,
     fields: 'id'
@@ -181,10 +184,14 @@ function finish(){
   for(i = 0; i < reactionArrayofArrays.length; i++){
     if(reactionArrayofArrays[i].length > length){
       indexOfLongest = i;
-      length = reactionArrayofArrays[i].length
+      length = reactionArrayofArrays[i].length;
     }
   }
   debugger;
+  var div = document.getElementById("loading");
+  div.style.display = "none";
+  var button = document.getElementById("playcomp");
+  button.style.display = "block";
 }
 
 /*
@@ -203,7 +210,7 @@ function CompositionGeneration(context){
   loader.load();
 }
 
-CompositionGeneration.prototype.playComposition = function(type, number, interval){
+CompositionGeneration.prototype.playComposition = function(){
   var time = context.currentTime;
   var quarterNote = 0.5357143; // quarter note = 112bpm
   for(i = 0; i < reactionArrayofArrays[indexOfLongest].length; i++){
@@ -226,7 +233,7 @@ CompositionGeneration.prototype.playComposition = function(type, number, interva
     else{
       likeCount = 0;
       var reactionSource = this.makeReactionSource(this.buffers[3]);
-      source[source.start ? 'start' : 'noteOn'](time + i * 8 * quarterNote);
+      reactionSource[reactionSource.start ? 'start' : 'noteOn'](time + i * 8 * quarterNote);
     }
 
     // handle the drone
@@ -254,3 +261,13 @@ CompositionGeneration.prototype.makeDroneSource = function(buffer) {
   gain.connect(context.destination);
   return source;
 };
+
+/*
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ *  This section holds the animation functions.
+ *  Based off of the threejs.org example "css3d_sprites.html"
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ */
+function animation(){
+
+}
