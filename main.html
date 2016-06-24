@@ -18,19 +18,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Ryan's Facebook Composition Project</title>
+<title>The Social Composition Project</title>
+<link rel="stylesheet" type="text/css" href="main.css">
 </head>
 <body>
   <script type="text/javascript" src="main.js"></script>
   <script type="text/javascript" src="shared.js"></script>
   <script>music = new CompositionGeneration(context);</script>
-<h1>Hello, World!</h1>
-<p>Ryan Taylor Rose</p>
-<button onclick="myFacebookLogin(capturePostIds)">Generate Composition</button>
-<br>
-<button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button>
-<br>
-<div id="loading" style="display:none"><p>Loading...  <img src="loading1.gif"  height="50" width="50"></p></div>
+<ul id="headerBar">
+  <li class="headerItem">
+    <a href="https://github.com/rytrose/The-Social-Composition-Project"><img src="images/github.png" title="Code Source" height="40" width="40"></a>
+  </li>
+</ul>
+
+<div id="meat">
+  <center>
+    <h1>The Social Composition Project</h1>
+    <p>by Ryan Rose<br>(C) June 2016</p>
+    <p></p>
+    <p>Please input a Facebook Page id. <br>To find an id for a known page please use <a href="http://findmyfbid.com" target="_blank">findmyfbid.com</a>. (Ex. 92017720030)</p>
+      <input type="number" id="pageId" placeholder="Page Id" />
+    <p></p>
+    <button id="generate" onclick="myFacebookLogin(capturePostIds)">Generate Composition</button>
+    <p></p>
+    <button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button>
+    <p></p>
+    <div id="loading" style="display:none"><img src="ring-alt.gif"  height="50" width="50"></div>
+  </center>
+</div>
+
+<div id="container"></div>
 </body>
 
 </html>

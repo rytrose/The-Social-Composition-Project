@@ -75,14 +75,25 @@ function myFacebookLogin(callback) {
 
 // Gathers the post ids of a given page (currently hardcoded to Speakeasy page: https://www.facebook.com/CWRUSpeakeasy/)
 function capturePostIds(callback) {
-  var div = document.getElementById("loading");
-  div.style.display = "block";
-  FB.api('/92017720030/feed', {
-    access_token: user_access_token,
-    fields: 'id'
-  }, function(response){
-    nextIdPage(response, callback, response.paging);
-  });
+  var pageIdElement = document.getElementById("pageId");
+  var pageId = pageIdElement.value;
+  var queryString = '/' + pageId + '/feed';
+  try{
+      FB.api(queryString, {
+      access_token: user_access_token,
+      fields: 'id'
+    }, function(response){
+      nextIdPage(response, callback, response.paging);
+    });
+  }
+  catch(e){
+    window.alert("Facebook Page does not exist.");
+    return;
+  }
+  var button = document.getElementById("generate");
+  button.style.display = "none";
+  var loading = document.getElementById("loading");
+  loading.style.display = "block";
 };
 
 // Recursively pages through post results and stores ids
@@ -126,7 +137,7 @@ function reactionProcessing(callback){
 // Gathers the names and reactions for a given post
 function captureNamesReactions(callback){
   var id = ids.shift();
-  dest = '/' + id + '/reactions'
+  dest = '/' + id + '/reactions';
   postIdArray.push(id);
   FB.api(dest, {
     access_token: user_access_token,
@@ -164,8 +175,8 @@ function nextReactionsPage(response, callback, nextURL){
     callback(finish);
   }
   else{
-    console.log("Reading page...")
-    console.log(response)
+    console.log("Reading page...");
+    console.log(response);
     for(i = 0; i < response.data.length; i++){
       nameArray.push(response.data[i].name);
       reactionArray.push(response.data[i].type);
@@ -188,6 +199,7 @@ function finish(){
     }
   }
   debugger;
+  console.log(reactionArrayofArrays[indexOfLongest]);
   var div = document.getElementById("loading");
   div.style.display = "none";
   var button = document.getElementById("playcomp");
@@ -213,6 +225,11 @@ function CompositionGeneration(context){
 CompositionGeneration.prototype.playComposition = function(){
   var time = context.currentTime;
   var quarterNote = 0.5357143; // quarter note = 112bpm
+
+  var intro = 16 * quarterNote;
+  var droneSource0 = this.makeDroneSource(this.buffers[1]);
+  droneSource0[droneSource0.start ? 'start' : 'noteOn'](time);
+
   for(i = 0; i < reactionArrayofArrays[indexOfLongest].length; i++){
 
     // handle the melody
@@ -222,23 +239,25 @@ CompositionGeneration.prototype.playComposition = function(){
 
       // normal like sample
       var source = this.makeReactionSource(this.buffers[0]);
-      source[source.start ? 'start' : 'noteOn'](time + i * 8 * quarterNote);
+      source[source.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
 
       // 4-like sequence sample
       if(i > 0 && likeCount % 4 == 0){
         var droneSource2 = this.makeDroneSource(this.buffers[2]);
-        droneSource2[droneSource2.start ? 'start' : 'noteOn'](time + (i + 1) * 8 * quarterNote);
+        droneSource2[droneSource2.start ? 'start' : 'noteOn'](time + intro + (i + 1) * 8 * quarterNote);
       }
     }
     else{
       likeCount = 0;
       var reactionSource = this.makeReactionSource(this.buffers[3]);
-      reactionSource[reactionSource.start ? 'start' : 'noteOn'](time + i * 8 * quarterNote);
+      reactionSource[reactionSource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
     }
 
-    // handle the drone
-    var droneSource = this.makeDroneSource(this.buffers[1]);
-    droneSource[droneSource.start ? 'start' : 'noteOn'](time + i * 16 * quarterNote);
+    if(i < (reactionArrayofArrays[indexOfLongest].length / 2) + 4){
+      // handle the drone
+      var droneSource = this.makeDroneSource(this.buffers[1]);
+      droneSource[droneSource.start ? 'start' : 'noteOn'](time + intro + i * 16 * quarterNote);
+    }
   }
 }
 
