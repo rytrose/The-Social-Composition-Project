@@ -376,17 +376,17 @@ function animation(){
         var sprite = image.cloneNode();
         // Set the correct image based on reaction
         if(reactions[i] == "LIKE")
-          sprite.src = 'Facebook Reaction PNGs/like.png';
+          sprite.src = 'images/Facebook Reaction PNGs/like.png';
         if(reactions[i] == "LOVE")
-          sprite.src = 'Facebook Reaction PNGs/love.png';
+          sprite.src = 'images/Facebook Reaction PNGs/love.png';
         if(reactions[i] == "SAD")
-          sprite.src = 'Facebook Reaction PNGs/sad.png';
+          sprite.src = 'images/Facebook Reaction PNGs/sad.png';
         if(reactions[i] == "ANGRY")
-          sprite.src = 'Facebook Reaction PNGs/angry.png';
+          sprite.src = 'images/Facebook Reaction PNGs/angry.png';
         if(reactions[i] == "HAHA")
-          sprite.src = 'Facebook Reaction PNGs/haha.png';
+          sprite.src = 'images/Facebook Reaction PNGs/haha.png';
         if(reactions[i] == "WOW")
-          sprite.src = 'Facebook Reaction PNGs/wow.png';
+          sprite.src = 'images/Facebook Reaction PNGs/wow.png';
         sprite.title = names[i];
         var object = new THREE.CSS3DSprite( sprite );
 
@@ -405,7 +405,7 @@ function animation(){
       transition();
 
     }, false );
-    image.src = 'Facebook Reaction PNGs/like.png';
+    image.src = 'images/Facebook Reaction PNGs/like.png';
 
     // Random math
     for ( var i = 0; i < reactions.length; i ++ ) {
@@ -472,17 +472,17 @@ function animation(){
   var highlight = function () {
     var img = document.createElement( 'img' );
     if(reactions[highlightFlag] == "LIKE")
-      img.src = 'Facebook Reaction PNGs/like1.png';
+      img.src = 'images/Facebook Reaction PNGs/like1.png';
     if(reactions[highlightFlag] == "LOVE")
-      img.src = 'Facebook Reaction PNGs/love1.png';
+      img.src = 'images/Facebook Reaction PNGs/love1.png';
     if(reactions[highlightFlag] == "SAD")
-      img.src = 'Facebook Reaction PNGs/sad1.png';
+      img.src = 'images/Facebook Reaction PNGs/sad1.png';
     if(reactions[highlightFlag] == "ANGRY")
-      img.src = 'Facebook Reaction PNGs/angry1.png';
+      img.src = 'images/Facebook Reaction PNGs/angry1.png';
     if(reactions[highlightFlag] == "HAHA")
-      img.src = 'Facebook Reaction PNGs/haha1.png';
+      img.src = 'images/Facebook Reaction PNGs/haha1.png';
     if(reactions[highlightFlag] == "WOW")
-      img.src = 'Facebook Reaction PNGs/wow1.png';
+      img.src = 'images/Facebook Reaction PNGs/wow1.png';
     img.title = names[highlightFlag];
     var obj = new THREE.CSS3DSprite( img );
     obj.position.x = objects[highlightFlag].position.x;
