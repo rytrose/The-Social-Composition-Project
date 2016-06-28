@@ -17,6 +17,9 @@
 // Facebook global variables
 var user_access_token = -1;
 var pagesOfPostIds = 0;
+
+var arrayOfPosts = []; // Array of arrays consisting of post info for the compose by post input
+
 var ids = []; // Array of post ids first gathered from the given page
 var postIdArray = []; // Array of post ids rebuilt after ids[]
 var nameArray = []; // temp
@@ -29,6 +32,36 @@ var indexOfLongest = 0; // Used to find one post to compose off of
 var likeCount = 0; // Used to determine when to play LIKE sequence phrase
 
 var highlightFlag = -1; // Used to trigger animations alongside music
+
+var inputTypeFlag = 0; // Flag to determine if input is by post (0) or by page (1)
+
+// Element animation handling
+$(document).ready(function(){
+    $("#about").click(function(){
+      if($('#video').css('display') == 'none'){
+        $('#video').slideDown('slow');
+      }
+      else {
+        $('#video').slideUp('slow');
+      }
+    });
+    $("#closeAbout").click(function(){
+        $("#video").slideUp();
+    });
+    $("#composeByPost").click(function(){
+        $("#pageInput").hide('fast');
+        $("#postInput").show('fast');
+        $("#generate").hide();
+        inputTypeFlag = 0;
+
+    });
+    $("#composeByPage").click(function(){
+        $("#postInput").hide('fast');
+        $("#pageInput").show('fast');
+        $("#generate").show();
+        inputTypeFlag = 1;
+    });
+});
 
 // Facebook API Init
 window.fbAsyncInit = function() {
@@ -57,7 +90,12 @@ function myFacebookLogin(callback) {
         console.log(response);
         console.log('Good to see you, ' + response.name + '.');
         // Begin retrieving data from the input page
-        callback(reactionProcessing);
+        if(inputTypeFlag == 1){
+          callback(reactionProcessing);
+        }
+        else {
+          callback(displayPosts);
+        }
       });
       FB.getLoginStatus(function(response){
         if (response.status === 'connected') {
@@ -73,7 +111,7 @@ function myFacebookLogin(callback) {
     } else {
       console.log('User cancelled login or did not fully authorize.');
     }
-   }, {scope: 'user_friends,user_likes'});
+  }, {scope: 'user_friends,user_likes,user_posts'});
 };
 
 /*
@@ -81,6 +119,146 @@ function myFacebookLogin(callback) {
  *  This section holds the Facebook data collection functions.
  * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  */
+
+// Determine input type and proceed accordingly
+function generateComposition(){
+  if(inputTypeFlag == 0){
+    console.log("NOPE!");
+  }
+  else{
+    myFacebookLogin(capturePostIds);
+  }
+}
+
+///////////////////////////////////////
+//  Generate by pose
+///////////////////////////////////////
+
+// Function to get unix timestamp
+function getUnixTime(dateIn) {
+  date = new Date(dateIn);
+  return date.getTime()/1000|0
+}
+
+function getTimeIntervalPosts(callback){
+  document.getElementById("dateSubmit").style.display = "none";
+  var startDate = document.getElementById("startDate").value
+  var endDate = document.getElementById("endDate").value
+
+  // Get start and end date in Unix timestamps for Facebook query
+  var startDateUnix = getUnixTime(startDate);
+  var endDateUnix = getUnixTime(endDate);
+
+  // Validate input
+  var diff = endDateUnix - startDateUnix;
+  if(diff < 0){
+    alert("End date must be later than start date.")
+    document.getElementById("dateSubmit").style.display = "block";
+    return;
+  }
+  if(diff > 432000){
+    alert("Date range must be within five days.")
+    document.getElementById("dateSubmit").style.display = "block";
+    return;
+  }
+
+  try{
+    FB.api('/me/feed', {
+      since: startDateUnix,
+      until: endDateUnix,
+      access_token: user_access_token,
+      fields: "id,message,story"
+    }, function(response){
+      nextPageOfPosts(response, startDateUnix, endDateUnix, callback, response.paging);
+    });
+  }
+  catch(e){
+    alert("No posts from that time.");
+    return;
+  }
+
+  // Start loading GIF
+  document.getElementById("loadingPosts").style.display = "block";
+}
+
+function nextPageOfPosts(response, start, end, callback, nextURL){
+  if(response.data == undefined){
+    console.log("No posts returned.")
+    document.getElementById("loadingPosts").style.display = "none";
+  }
+  // Recursive base case: Reached the last page of returned data
+  // CURRENTLY CODED TO ONLY RETURN ONE PAGE TO REDUCE LOAD TIME
+  else if((nextURL == undefined)){
+    console.log("No more pages.")
+    for(i = 0; i < response.data.length; i++){
+      var post = [];
+      post.push(response.data[i].id);
+      if(response.data[i].message == undefined){
+        post.push("");
+      }
+      else{
+        post.push(response.data[i].message);
+      }
+      if(response.data[i].story == undefined){
+        post.push("");
+      }
+      else{
+        post.push(response.data[i].story);
+      }
+      arrayOfPosts.push(post);
+    }
+    callback();
+  }
+  else{
+    console.log("Reading page...")
+    for(i = 0; i < response.data.length; i++){
+      var post = [];
+      post.push(response.data[i].id);
+      if(response.data[i].message == undefined){
+        post.push("--");
+      }
+      else{
+        post.push(response.data[i].message);
+      }
+      if(response.data[i].story == undefined){
+        post.push("--");
+      }
+      else{
+        post.push(response.data[i].story);
+      }
+      arrayOfPosts.push(post);
+    }
+    FB.api(nextURL.next, {
+      access_token: user_access_token,
+      fields: 'id,message,story'
+    }, function(response){
+      nextPageOfPosts(response, start, end, callback, response.paging)
+    });
+  }
+}
+
+function displayPosts(){
+  var div = document.getElementById("posts");
+  for(i = 0; i < arrayOfPosts.length; i++){
+    var input = document.createElement("INPUT");
+    input.setAttribute("type", "radio");
+    var message = arrayOfPosts[i][1];
+    var story = arrayOfPosts[i][2];
+    var labelString = "Message: " + message.substring(0, 32) + "..."
+                      + "<br />" + "Story: " + story.substring(0,32) + "...";
+    var label = document.createElement("label");
+    label.appendChild(input);
+    label.innerHTML += labelString;
+    div.appendChild(label);
+    div.appendChild(document.createElement("br"));
+  }
+  document.getElementById("loadingPosts").style.display = "none";
+  document.getElementById("posts").style.display = "block";
+}
+
+///////////////////////////////////////
+//  Generate by page
+///////////////////////////////////////
 
 // Gathers the post ids of a given page
 function capturePostIds(callback) {
@@ -99,7 +277,7 @@ function capturePostIds(callback) {
     });
   }
   catch(e){
-    window.alert("Facebook Page does not exist.");
+    alert("Facebook Page does not exist.");
     return;
   }
   // Remove the Generate Composition button
@@ -212,9 +390,9 @@ function nextReactionsPage(response, callback, nextURL){
 function finish(){
   var length = 0;
   // Choose post
-  // CURRENTLY HARDCODED TO BE LARGEST POST LESS THAN 100 REACTIONS DUE TO VISUALIZATION
+  // CURRENTLY HARDCODED TO BE LARGEST POST LESS THAN 1000 REACTIONS DUE TO VISUALIZATION
   for(i = 0; i < reactionArrayofArrays.length; i++){
-    if(reactionArrayofArrays[i].length > length && reactionArrayofArrays[i].length < 100){
+    if(reactionArrayofArrays[i].length > length && reactionArrayofArrays[i].length < 1000){
       indexOfLongest = i;
       length = reactionArrayofArrays[i].length;
     }
@@ -234,10 +412,15 @@ function finish(){
  */
 function CompositionGeneration(context){
   var ctx = this;
-  var loader = new BufferLoader(context,['sounds/like1_8_counts.mp3',       // 0: LIKE phrase
-                                          'sounds/drone1.mp3',              // 1: Underlying drone phrase
-                                          'sounds/4like_seq_drone.mp3',     // 2: 4 LIKE sequence phrase
-                                          'sounds/beep1.mp3' ], onloaded);   // 3: Non-LIKE beep
+  var loader = new BufferLoader(context,['sounds/like1_clarinet.mp3',                    // 0: LIKE phrase
+                                          'sounds/drone1_strings.mp3',                   // 1: Underlying drone phrase
+                                          'sounds/4like_seq_flute.mp3',                  // 2: 4 LIKE sequence phrase
+                                          'sounds/love1.mp3',                            // 3: LOVE phrase
+                                          'sounds/sad1.mp3',                             // 4: SAD phrase
+                                          'sounds/haha1.mp3',                            // 5: HAHA phrase
+                                          'sounds/wow1.mp3',                             // 6: WOW phrase
+                                          'sounds/angry1.mp3',                           // 7: ANGRY phrase
+                                          'sounds/Blue-Cassette-End.mp3'], onloaded);    // 8: End sign-off
   // Buffer audio into memory
   function onloaded(buffers){
     ctx.buffers = buffers;
@@ -271,8 +454,8 @@ CompositionGeneration.prototype.playComposition = function(){
   setTimeout(function(){highlightViz(0)},  Math.floor(1000 * intro));
 
   // Start the intro
-  var droneSource0 = this.makeDroneSource(this.buffers[1]);
-  droneSource0[droneSource0.start ? 'start' : 'noteOn'](time);
+  var introDrone = this.makeDroneSource(this.buffers[1]);
+  introDrone[introDrone.start ? 'start' : 'noteOn'](time);
 
   // Generate the composition!
   for(i = 0; i < reactionArrayofArrays[indexOfLongest].length; i++){
@@ -284,22 +467,54 @@ CompositionGeneration.prototype.playComposition = function(){
       likeCount++;
 
       // Normal LIKE phrase
-      var source = this.makeReactionSource(this.buffers[0]);
-      source[source.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
+      var likeSource = this.makeLikeSource(this.buffers[0]);
+      likeSource[likeSource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
 
       // 4 LIKE sequence phrase
       if(i > 0 && likeCount % 4 == 0){
-        var droneSource2 = this.makeDroneSource(this.buffers[2]);
-        droneSource2[droneSource2.start ? 'start' : 'noteOn'](time + intro + (i + 1) * 8 * quarterNote);
+        var likeSeqSource = this.makeLikeSeqSource(this.buffers[2]);
+        likeSeqSource[likeSeqSource.start ? 'start' : 'noteOn'](time + intro + (i + 1) * 8 * quarterNote);
       }
     }
-    else{
+    else if(reactionArrayofArrays[indexOfLongest][i] == 'LOVE'){
+      // Reset LIKE sequence count
+      likeCount = 0
+
+      // LOVE phrase
+      var loveSource = this.makeLoveSource(this.buffers[3]);
+      loveSource[loveSource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
+    }
+    else if(reactionArrayofArrays[indexOfLongest][i] == 'SAD'){
+      // Reset LIKE sequence count
+      likeCount = 0
+
+      // SAD phrase
+      var sadSource = this.makeSadSource(this.buffers[4]);
+      sadSource[sadSource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
+    }
+    else if(reactionArrayofArrays[indexOfLongest][i] == 'HAHA'){
+      // Reset LIKE sequence count
+      likeCount = 0
+
+      // HAHA phrase
+      var hahaSource = this.makeHahaSource(this.buffers[5]);
+      hahaSource[hahaSource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
+    }
+    else if(reactionArrayofArrays[indexOfLongest][i] == 'WOW'){
+      // Reset LIKE sequence count
+      likeCount = 0
+
+      // HAHA phrase
+      var wowSource = this.makeWowSource(this.buffers[6]);
+      wowSource[wowSource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
+    }
+    else if(reactionArrayofArrays[indexOfLongest][i] == 'ANGRY'){
       // Reset LIKE sequence count
       likeCount = 0;
 
-      // Non-LIKE phrase
-      var reactionSource = this.makeReactionSource(this.buffers[3]);
-      reactionSource[reactionSource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
+      // ANGRY phrase
+      var angrySource = this.makeAngrySource(this.buffers[7]);
+      angrySource[angrySource.start ? 'start' : 'noteOn'](time + intro + i * 8 * quarterNote);
     }
 
     // Drone is twice as long as reaction phrases, play and outro of 4 drone cycles
@@ -308,25 +523,106 @@ CompositionGeneration.prototype.playComposition = function(){
       var droneSource = this.makeDroneSource(this.buffers[1]);
       droneSource[droneSource.start ? 'start' : 'noteOn'](time + intro + i * 16 * quarterNote);
     }
+
+    if(i == reactionArrayofArrays[indexOfLongest].length - 1){
+      // Play end sign-off
+      var endSource = this.makeEndSource(this.buffers[8]);
+      endSource[endSource.start ? 'start' : 'noteOn'](time + intro + .05 + (i + 1) * 16 * quarterNote);
+    }
   }
 }
 
+/*
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ *  All the varied-gain buffer sources
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ */
+
 // Source for reaction phrases, more gain than drone
-CompositionGeneration.prototype.makeReactionSource = function(buffer) {
+CompositionGeneration.prototype.makeLikeSource = function(buffer) {
   var source = context.createBufferSource();
   var gain = context.createGain();
-  gain.gain.value = 0.4;
+  gain.gain.value = 0.50;
   source.buffer = buffer;
   source.connect(gain);
   gain.connect(context.destination);
   return source;
 };
 
-// Source for drone phrases, less gain than reactions
+CompositionGeneration.prototype.makeLikeSeqSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.40;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
+CompositionGeneration.prototype.makeLoveSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.27;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
+CompositionGeneration.prototype.makeSadSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.40;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
+CompositionGeneration.prototype.makeHahaSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.30;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
+CompositionGeneration.prototype.makeWowSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.15;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
+CompositionGeneration.prototype.makeAngrySource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.60;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
 CompositionGeneration.prototype.makeDroneSource = function(buffer) {
   var source = context.createBufferSource();
   var gain = context.createGain();
   gain.gain.value = 0.20;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(context.destination);
+  return source;
+};
+
+CompositionGeneration.prototype.makeEndSource = function(buffer) {
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  gain.gain.value = 0.35;
   source.buffer = buffer;
   source.connect(gain);
   gain.connect(context.destination);

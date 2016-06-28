@@ -25,6 +25,7 @@
   </head>
 
   <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script type="text/javascript" src="main.js"></script>
     <script type="text/javascript" src="shared.js"></script>
     <script src="three/three.js"></script>
@@ -34,21 +35,64 @@
 
     <script>music = new CompositionGeneration(context);</script>
 
-    <ul id="headerBar">
-      <li class="headerItem">
-        <a href="https://github.com/rytrose/The-Social-Composition-Project"><img src="images/github.png" title="Code Source" height="40" width="40"></a>
-      </li>
-    </ul>
+    <div class ="headerBar">
+      <ul>
+        <li>
+          <button id="about">About</button>
+        </li>
+        <li>
+          <a href="https://github.com/rytrose/The-Social-Composition-Project" target="_blank"><img src="images/github.png" title="Code Source" height="40" width="40"></a>
+        </li>
+      </ul>
+    </div>
 
-    <div id="info">
+    <div id="video" style="display:none">
+      <center>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/bD28F_kmAcc" frameborder="0" allowfullscreen></iframe>
+        <p></p>
+        <button id="closeAbout">Close</button>
+      </center>
+    </div>
+
+    <div class="info" id="title">
       <center>
         <h1>The Social Composition Project</h1>
         <p>by Ryan Rose<br>(C) June 2016</p>
         <p></p>
+      </center>
+    </div>
+
+    <div class="info" id="pageInput" style="display:none">
+      <center>
+        <button id="composeByPost">Switch to Compose by Post</button>
         <p>Please input a Facebook Page id. <br>To find an id for a known page please use <a href="http://findmyfbid.com" target="_blank">findmyfbid.com</a>. (Ex. 92017720030, 10351802587)</p>
-          <input type="number" id="pageId" placeholder="Page Id" />
+        <input type="number" id="pageId" placeholder="Page Id" />
         <p></p>
-        <button id="generate" onclick="myFacebookLogin(capturePostIds)">Generate Composition</button>
+      </center>
+    </div>
+
+    <div class="info" id="postInput">
+      <center>
+        <button id="composeByPage">Switch to Compose by Page</button>
+        <p>Please enter a date range of equal or less than five days, then select a post.</p>
+        Start Date: <input type="date" id="startDate">
+        <br>
+        End Date: <input type="date" id="endDate">
+        <br>
+        <p></p>
+        <button id="dateSubmit" onclick="myFacebookLogin(getTimeIntervalPosts)">Submit</button>
+        <p></p>
+        <div id="loadingPosts" style="display:none"><img src="images/ring-alt.gif"  height="30" width="30"></div>
+        <div class="info" id="posts" style="display:none">
+          <button id="postSubmit" onclick="">Submit</button>
+          <br>
+        </div>
+      </center>
+    </div>
+
+    <div class="info">
+      <center>
+        <button id="generate" onclick="generateComposition()" style="display:none">Generate Composition</button>
         <p></p>
         <button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button>
         <p></p>

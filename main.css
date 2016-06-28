@@ -13,19 +13,21 @@
  *
  *XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  */
-#headerBar {
+
+.headerBar {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+  }
+
+.headerBar ul {
+    list-style-type: none;
+    text-align: right;
 }
 
-.headerItem {
-    float: right;
-}
-
-.headerItem img {
-    display: block;
+.headerBar ul li {
+    display: inline-block;
+    vertical-align: middle;
     padding: 8px;
 }
 
@@ -33,7 +35,7 @@ body {
     padding: 0px;
 }
 
-#info {
+.info {
     font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
     margin: auto;
     width: 50%;
