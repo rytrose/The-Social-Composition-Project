@@ -33,7 +33,7 @@
 
 body {
     background-color: #edf7ff;
-    background-image: url("http://www.transparenttextures.com/patterns/church.png");
+    background-image: url('images/background.png');
     padding: 0px;
 }
 
