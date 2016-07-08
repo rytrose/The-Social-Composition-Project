@@ -123,7 +123,18 @@ function myFacebookLogin(callback) {
 // Determine input type and proceed accordingly
 function generateComposition(){
   if(inputTypeFlag == 0){
-    console.log("NOPE!");
+    var div = document.getElementById("posts");
+    ids = [];
+    for(i = 0; i < div.children[1].length; i++){
+      var l = div.children[1][i];
+      if(l.selected){
+          ids.push(l.id);
+      }
+    }
+    div.style.display = "none";
+    document.getElementById("generateComp").style.display = "none";
+    document.getElementById("loadingPosts").style.display = "block";
+    reactionProcessing(finish);
   }
   else{
     myFacebookLogin(capturePostIds);
@@ -131,7 +142,7 @@ function generateComposition(){
 }
 
 ///////////////////////////////////////
-//  Generate by pose
+//  Generate by post
 ///////////////////////////////////////
 
 // Function to get unix timestamp
@@ -140,6 +151,7 @@ function getUnixTime(dateIn) {
   return date.getTime()/1000|0
 }
 
+// Grab the posts from an input time period
 function getTimeIntervalPosts(callback){
   document.getElementById("dateSubmit").style.display = "none";
   var startDate = document.getElementById("startDate").value
@@ -156,12 +168,21 @@ function getTimeIntervalPosts(callback){
     document.getElementById("dateSubmit").style.display = "block";
     return;
   }
+  
+  // Make sure the date range is less than 5 days
   if(diff > 432000){
     alert("Date range must be within five days.")
     document.getElementById("dateSubmit").style.display = "block";
     return;
   }
-
+  
+  // If they didn't input a date
+  if(diff == 0){
+    alert("Please enter a valid date range.");
+    document.getElementById("dateSubmit").style.display = "block";
+    return;
+  }
+  
   try{
     FB.api('/me/feed', {
       since: startDateUnix,
@@ -181,13 +202,13 @@ function getTimeIntervalPosts(callback){
   document.getElementById("loadingPosts").style.display = "block";
 }
 
+// Get post information
 function nextPageOfPosts(response, start, end, callback, nextURL){
   if(response.data == undefined){
     console.log("No posts returned.")
     document.getElementById("loadingPosts").style.display = "none";
   }
   // Recursive base case: Reached the last page of returned data
-  // CURRENTLY CODED TO ONLY RETURN ONE PAGE TO REDUCE LOAD TIME
   else if((nextURL == undefined)){
     console.log("No more pages.")
     for(i = 0; i < response.data.length; i++){
@@ -239,21 +260,29 @@ function nextPageOfPosts(response, start, end, callback, nextURL){
 
 function displayPosts(){
   var div = document.getElementById("posts");
+  var select = document.createElement("SELECT");
+  select.value = "Choose a post.";
+  div.appendChild(select);
   for(i = 0; i < arrayOfPosts.length; i++){
-    var input = document.createElement("INPUT");
-    input.setAttribute("type", "radio");
+    var option = document.createElement("OPTION");
     var message = arrayOfPosts[i][1];
     var story = arrayOfPosts[i][2];
-    var labelString = "Message: " + message.substring(0, 32) + "..."
-                      + "<br />" + "Story: " + story.substring(0,32) + "...";
-    var label = document.createElement("label");
-    label.appendChild(input);
-    label.innerHTML += labelString;
-    div.appendChild(label);
-    div.appendChild(document.createElement("br"));
+    var optionString = "Message: " + message.substring(0, 60) + "..."
+                      + ", "+ "Story: " + story.substring(0, 60) + "...";
+    option.text = optionString;
+    option.id = arrayOfPosts[i][0];
+    select.appendChild(option);
   }
-  document.getElementById("loadingPosts").style.display = "none";
-  document.getElementById("posts").style.display = "block";
+  if(div.children.length == 1){
+    document.getElementById("loadingPosts").style.display = "none";
+    document.getElementById("dateSubmit").style.display = "block";
+    alert("No posts from that date range found.");
+  }
+  else{
+    document.getElementById("loadingPosts").style.display = "none";
+    document.getElementById("posts").style.display = "block";
+    document.getElementById("generateComp").style.display = "block";
+  }
 }
 
 ///////////////////////////////////////
@@ -397,12 +426,20 @@ function finish(){
       length = reactionArrayofArrays[i].length;
     }
   }
-
-  // Remove loading GIF and present Play Composition button
-  var div = document.getElementById("loading");
-  div.style.display = "none";
-  var button = document.getElementById("playcomp");
-  button.style.display = "block";
+  if(inputTypeFlag == 0){
+    // Remove loading GIF and present Play Composition button
+    var div = document.getElementById("loadingPosts");
+    div.style.display = "none";
+    var button = document.getElementById("playcomp");
+    button.style.display = "block";
+  }
+  else{
+    // Remove loading GIF and present Play Composition button
+    var div = document.getElementById("loading");
+    div.style.display = "none";
+    var button = document.getElementById("playcomp");
+    button.style.display = "block";
+  }
 }
 
 /*
