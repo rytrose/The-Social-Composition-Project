@@ -50,16 +50,28 @@ $(document).ready(function(){
     });
     $("#composeByPost").click(function(){
         $("#pageInput").hide('fast');
+        $("#generate").hide('fast');
         $("#postInput").show('fast');
-        $("#generate").hide();
         inputTypeFlag = 0;
 
     });
     $("#composeByPage").click(function(){
         $("#postInput").hide('fast');
         $("#pageInput").show('fast');
-        $("#generate").show();
+        $("#generate").show('fast');
         inputTypeFlag = 1;
+    });
+    $("#selectNewDate").click(function(){
+        // Reset date fields
+        $("input[type=date]").val("")
+
+        // Get rid of the previously returned posts
+        $(".postOption").remove()
+
+        $("#dateSubmit").show();
+        $("#posts").hide();
+        $("#selectNewDate").hide();
+        $("#generateComp").hide();
     });
 });
 
@@ -168,21 +180,21 @@ function getTimeIntervalPosts(callback){
     document.getElementById("dateSubmit").style.display = "block";
     return;
   }
-  
+
   // Make sure the date range is less than 5 days
   if(diff > 432000){
     alert("Date range must be within five days.")
     document.getElementById("dateSubmit").style.display = "block";
     return;
   }
-  
+
   // If they didn't input a date
   if(diff == 0){
     alert("Please enter a valid date range.");
     document.getElementById("dateSubmit").style.display = "block";
     return;
   }
-  
+
   try{
     FB.api('/me/feed', {
       since: startDateUnix,
@@ -262,24 +274,26 @@ function displayPosts(){
   var div = document.getElementById("posts");
   var select = document.createElement("SELECT");
   select.value = "Choose a post.";
+  select.className = "postOption"
   div.appendChild(select);
-  for(i = 0; i < arrayOfPosts.length; i++){
-    var option = document.createElement("OPTION");
-    var message = arrayOfPosts[i][1];
-    var story = arrayOfPosts[i][2];
-    var optionString = "Message: " + message.substring(0, 60) + "..."
-                      + ", "+ "Story: " + story.substring(0, 60) + "...";
-    option.text = optionString;
-    option.id = arrayOfPosts[i][0];
-    select.appendChild(option);
-  }
-  if(div.children.length == 1){
+  if(arrayOfPosts.length == 0){
     document.getElementById("loadingPosts").style.display = "none";
     document.getElementById("dateSubmit").style.display = "block";
     alert("No posts from that date range found.");
   }
   else{
+    for(i = 0; i < arrayOfPosts.length; i++){
+      var option = document.createElement("OPTION");
+      var message = arrayOfPosts[i][1];
+      var story = arrayOfPosts[i][2];
+      var optionString = "Message: " + message.substring(0, 60) + "..."
+                        + ", "+ "Story: " + story.substring(0, 60) + "...";
+      option.text = optionString;
+      option.id = arrayOfPosts[i][0];
+      select.appendChild(option);
+    }
     document.getElementById("loadingPosts").style.display = "none";
+    document.getElementById("selectNewDate").style.display = "block";
     document.getElementById("posts").style.display = "block";
     document.getElementById("generateComp").style.display = "block";
   }

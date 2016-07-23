@@ -85,7 +85,9 @@
         <button id="composeByPost">Switch to Compose by Post</button>
         <p>Please input a Facebook Page id. <br>To find an id for a known page please use <a href="http://findmyfbid.com" target="_blank">findmyfbid.com</a>. (Ex. 92017720030, 10351802587)</p>
         <input type="number" id="pageId" placeholder="Page Id" />
-        <p></p>
+        <p><button id="generate" onclick="generateComposition()" style="display:none">Generate Composition</button></p>
+        <p><button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button></p>
+        <p><div id="loading" style="display:none"><img src="images/ring-alt.gif"  height="50" width="50"></div></p>
       </center>
     </div>
 
@@ -97,24 +99,13 @@
         <br>
         End Date: <input type="date" id="endDate">
         <br>
-        <p></p>
-        <button id="dateSubmit" onclick="myFacebookLogin(getTimeIntervalPosts)">Submit</button>
-        <p></p>
+        <p><button id="dateSubmit" onclick="myFacebookLogin(getTimeIntervalPosts)">Submit</button></p>
         <div id="loadingPosts" style="display:none"><img src="images/ring-alt.gif"  height="30" width="30"></div>
         <div class="info" id="posts" style="display:none">
           <p>Please select a post.</p>
         </div>
+        <p><button id="selectNewDate" style="display:none">Try Another Date</button></p>
         <p><button id="generateComp" style="display:none" onclick="generateComposition()">Generate Composition</button></p>
-      </center>
-    </div>
-
-    <div class="info">
-      <center>
-        <button id="generate" onclick="generateComposition()" style="display:none">Generate Composition</button>
-        <p></p>
-        <button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button>
-        <p></p>
-        <div id="loading" style="display:none"><img src="images/ring-alt.gif"  height="50" width="50"></div>
       </center>
     </div>
 
