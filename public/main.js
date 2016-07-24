@@ -73,6 +73,11 @@ $(document).ready(function(){
         $("#selectNewDate").hide();
         $("#generateComp").hide();
     });
+
+    // Restart --> reload page from cache
+    $("#restart").click(function(){
+      location.reload();
+    });
 });
 
 // Facebook API Init
@@ -446,14 +451,14 @@ function finish(){
     div.style.display = "none";
     var button = document.getElementById("playcomp");
     button.style.display = "block";
-  }
+    }
   else{
     // Remove loading GIF and present Play Composition button
     var div = document.getElementById("loading");
     div.style.display = "none";
     var button = document.getElementById("playcomp");
     button.style.display = "block";
-  }
+    }
 }
 
 /*
@@ -484,9 +489,9 @@ CompositionGeneration.prototype.playComposition = function(){
   // Start animating
   animation();
 
-  // Get rid of Play Composition button so user can't play more than once
-  var div = document.getElementById("playcomp");
-  div.style.display = "none";
+  // Hide play button and reveal restart button
+  document.getElementById("playcomp").style = "display:none";
+  document.getElementById("restart").style = "display:block";
 
   // Set up time paradigm for music and animation generation
   var time = context.currentTime;
@@ -769,6 +774,7 @@ function animation(){
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.domElement.style.position = 'absolute';
     document.getElementById( 'container' ).appendChild( renderer.domElement );
+    document.getElementById('controlsDiv').style = "display:block";
 
     // Initialize Trackball Controls
     controls = new THREE.TrackballControls( camera, renderer.domElement );
@@ -779,7 +785,7 @@ function animation(){
     // Handle window resizing
     window.addEventListener( 'resize', onWindowResize, false );
 
-    window.scrollTo(0,356);
+    window.scrollTo(0,500);
   }
 
   // Handle window resizing
@@ -881,3 +887,25 @@ function animation(){
     renderer.render( scene, camera );
   }
 }
+
+/*
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ *  This section holds the demo code, which displays all
+ *  reactions with arbitrary names.
+ * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ */
+
+ function demo(){
+   indexOfLongest = 0;
+   nameArrayofArrays = [["Susie Hover", "Barry Morris", "Mary Breaux", "Alberto Coon",
+                         "Lisa Dove", "Carlos Hawkins", "Brandon Beech", "Jack Burch",
+                         "Tony Corral", "Odell Weaver", "Dawn Groves", "Cindy Irizarry",
+                         "Fletcher Jennings", "Pam Morgan", "Carla Brown", "Linda Johnson",
+                         "Shirley Cole", "Elmer Gaitan", "Terry Blanchard", "Bob Ross"]];
+   reactionArrayofArrays = [["LIKE", "LIKE", "LIKE", "LIKE",
+                             "LIKE", "LOVE", "LIKE", "LIKE",
+                             "HAHA", "LIKE", "ANGRY", "LIKE",
+                             "LIKE", "SAD", "LIKE", "LIKE",
+                             "LIKE", "LIKE", "WOW", "LIKE"]];
+    music.playComposition();
+ }

@@ -75,7 +75,7 @@
     <div class="info" id="title">
       <center>
         <h1>The Social Composition Project</h1>
-        <p>by Ryan Rose<br>(C) June 2016</p>
+        <p>by Ryan Rose<br>© June 2016<br><button id="demo" onclick="demo()">Demo</button></p>
         <p></p>
       </center>
     </div>
@@ -86,7 +86,6 @@
         <p>Please input a Facebook Page id. <br>To find an id for a known page please use <a href="http://findmyfbid.com" target="_blank">findmyfbid.com</a>. (Ex. 92017720030, 10351802587)</p>
         <input type="number" id="pageId" placeholder="Page Id" />
         <p><button id="generate" onclick="generateComposition()" style="display:none">Generate Composition</button></p>
-        <p><button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button></p>
         <p><div id="loading" style="display:none"><img src="images/ring-alt.gif"  height="50" width="50"></div></p>
       </center>
     </div>
@@ -101,15 +100,26 @@
         <br>
         <p><button id="dateSubmit" onclick="myFacebookLogin(getTimeIntervalPosts)">Submit</button></p>
         <div id="loadingPosts" style="display:none"><img src="images/ring-alt.gif"  height="30" width="30"></div>
+        <p><a id="selectNewDate" href="javascript:void(0);" style="display:none; font-size:small">try a new date</a></p>
         <div class="info" id="posts" style="display:none">
           <p>Please select a post.</p>
         </div>
-        <p><button id="selectNewDate" style="display:none">Try Another Date</button></p>
         <p><button id="generateComp" style="display:none" onclick="generateComposition()">Generate Composition</button></p>
       </center>
     </div>
 
+    <center>
+      <p><button id="playcomp" onclick="music.playComposition()" style="display:none">Play Composition</button></p>
+      <p><button id="restart" style="display:none">Restart</button></p>
+    </center>
+
+
     <div id="container"></div>
+    <div class="info" id="controlsDiv" style="display:none">
+        <center>
+          <p>Left Mouse Button -> Rotate<br>Right Mouse Button -> Pan<br>Scroll -> Zoom</p>
+        </center>
+    </div>
   </body>
 
 </html>

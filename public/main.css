@@ -55,13 +55,12 @@ h1 {
 p {
     color: black;
 }
+#controlsDiv p {
+  font-size: x-small;
+}
 
 .info label {
     font-size: .8em;
-    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
-}
-
-button {
     font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
