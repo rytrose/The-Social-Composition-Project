@@ -708,6 +708,20 @@ function animation(){
   animate();
 
   function init() {
+    // Preload all of the highlighted images
+    function preload(arrayOfImages) {
+      $(arrayOfImages).each(function(){
+          $('<img/>')[0].src = this;
+      });
+    }
+    preload([
+        'images/Facebook Reaction PNGs/like.png',
+        'images/Facebook Reaction PNGs/love.png',
+        'images/Facebook Reaction PNGs/sad.png',
+        'images/Facebook Reaction PNGs/angry.png',
+        'images/Facebook Reaction PNGs/haha.png',
+        'images/Facebook Reaction PNGs/wow.png'
+    ]);
 
     // Create the camera and point it at the center of the animation space
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 5000 );
