@@ -910,6 +910,10 @@ function animation(){
  */
 
  function demo(){
+   document.getElementById('demo').style = "display:none";
+   document.getElementById('postInput').style = "display:none";
+   document.getElementById('pageInput').style = "display:none";
+
    indexOfLongest = 0;
    nameArrayofArrays = [["Susie Hover", "Barry Morris", "Mary Breaux", "Alberto Coon",
                          "Lisa Dove", "Carlos Hawkins", "Brandon Beech", "Jack Burch",
